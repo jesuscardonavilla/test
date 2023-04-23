@@ -1,38 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:languify/screens/translations.dart';
 
 class DifficultyPageScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  final String title;
+  final List<String> difficulties;
+  final Function(String) onDifficultySelected;
+
+  DifficultyPageScreen({
+    required this.title,
+    required this.difficulties,
+    required this.onDifficultySelected,
+  });
+
+  Widget _buildDifficultyButton(String difficulty) {
+    return ElevatedButton(
+      onPressed: () => onDifficultySelected(difficulty),
+      child: Text(difficulty),
+    );
+  }
+
+  Widget _buildDifficultyList() {
+    return Column(
+      children: difficulties.map((difficulty) => _buildDifficultyButton(difficulty)).toList(),
+    );
+  }
+
+  Widget difficultyScreen(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          Translations.of(context)?.translate('chooseDifficulty') ?? '',
-        ),
+        title: Text(title),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ElevatedButton(
-            onPressed: () {},
-            child: Text(
-              Translations.of(context)?.translate('beginnerDifficulty') ?? '',
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text(
-              Translations.of(context)?.translate('intermediateDifficulty') ?? '',
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text(
-              Translations.of(context)?.translate('advancedDifficulty') ??'',
-            ),
-          ),
-        ],
+      body: Center(
+        child: _buildDifficultyList(),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return difficultyScreen(context);
   }
 }
