@@ -9,8 +9,11 @@ class _StorySection {
   _StorySection({required this.text, required this.options});
 
   factory _StorySection.fromJson(Map<String, dynamic> json) {
-    var optionObjsJson = json['options'] as List<dynamic>;
-    var options = optionObjsJson.map((_optionJson) => _StoryOption.fromJson(_optionJson)).toList();
+    var optionObjsJson = json['choices'];
+    var options = <_StoryOption>[];
+    if (optionObjsJson != null) {
+      options = List<_StoryOption>.from(optionObjsJson.map((_optionJson) => _StoryOption.fromJson(_optionJson)));
+    }
     return _StorySection(
       text: json['text'],
       options: options,
@@ -27,7 +30,7 @@ class _StoryOption {
   factory _StoryOption.fromJson(Map<String, dynamic> json) {
     return _StoryOption(
       text: json['text'],
-      destinationIndex: json['destinationIndex'],
+      destinationIndex: json['destination'],
     );
   }
 }
@@ -47,29 +50,19 @@ class StoryPage extends StatefulWidget {
 }
 
 class _StoryPageState extends State<StoryPage> {
-  Future<List<Story>> _storiesFuture = Future<List<Story>>.value([]);
+  Future<List<_StorySection>> _storySectionsFuture = Future<List<_StorySection>>.value([]);
 
-  Future<List<Story>> _loadStories() async {
-    String storyJson = await DefaultAssetBundle.of(context).loadString("data/english/beginner/story_1.json");
-    List<dynamic> jsonList = json.decode(storyJson);
-    return jsonList.map((json) => Story.fromJson(json)).toList();
+  Future<List<_StorySection>> _loadStorySections() async {
+    String storyJson = await rootBundle.loadString('data/english/beginner/story_1.json');
+    List<dynamic> jsonList = json.decode(storyJson)['pages'] ?? [];
+    return jsonList.map((json) => _StorySection.fromJson(json)).toList();
   }
 
   @override
   void initState() {
     super.initState();
-    _storiesFuture = _loadStories();
+    _storySectionsFuture = _loadStorySections();
   }
-
-  Future<Story> loadStoryData() async {
-    String data = await rootBundle.loadString('data/english/beginner/story_1.json');
-    Map<String, dynamic> jsonMap = json.decode(data);
-    Story story = Story.fromJson(jsonMap);
-    return story;
-  }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,28 +71,28 @@ class _StoryPageState extends State<StoryPage> {
         title: Text('Stories'),
       ),
       body: FutureBuilder(
-        future: _storiesFuture,
-        builder: (BuildContext context, AsyncSnapshot<List<Story>> snapshot) {
+        future: _storySectionsFuture,
+        builder: (BuildContext context, AsyncSnapshot<List<_StorySection>> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasData) {
-              final stories = snapshot.data!;
+              final storySections = snapshot.data!;
               return ListView.builder(
-                itemCount: stories.length,
+                itemCount: storySections.length,
                 itemBuilder: (BuildContext context, int index) {
-                  final story = stories[index];
+                  final section = storySections[index];
                   return ListTile(
-                    title: Text(story.title),
-                    subtitle: Text(story.body),
+                    title: Text(section.text),
+                    subtitle: Text(section.options.map((option) => option.text).join(', ')),
                   );
                 },
               );
             } else if (snapshot.hasError) {
               return Center(
-                child: Text('Error loading stories: ${snapshot.error}'),
+                child: Text('Error loading story sections: ${snapshot.error}'),
               );
             } else {
               return Center(
-                child: Text('No stories found.'),
+                child: Text('No story sections found.'),
               );
             }
           } else {
@@ -145,12 +138,3 @@ class Choice {
     );
   }
 }
-
-
-Future<Story> _loadStory(String path) async {
-  String data = await rootBundle.loadString(path);
-  Map<String, dynamic> jsonMap = json.decode(data);
-  Story story = Story.fromJson(jsonMap);
-  return story;
-}
-
