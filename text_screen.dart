@@ -2,6 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
 
+class _StorySection {
+  final String text;
+  final List<_StoryOption> options;
+
+  _StorySection({required this.text, required this.options});
+
+  factory _StorySection.fromJson(Map<String, dynamic> json) {
+    var optionObjsJson = json['options'] as List<dynamic>;
+    var options = optionObjsJson.map((_optionJson) => _StoryOption.fromJson(_optionJson)).toList();
+    return _StorySection(
+      text: json['text'],
+      options: options,
+    );
+  }
+}
+
+class _StoryOption {
+  final String text;
+  final int destinationIndex;
+
+  _StoryOption({required this.text, required this.destinationIndex});
+
+  factory _StoryOption.fromJson(Map<String, dynamic> json) {
+    return _StoryOption(
+      text: json['text'],
+      destinationIndex: json['destinationIndex'],
+    );
+  }
+}
+
 class StoryPage extends StatefulWidget {
   final String language;
   final String level;
@@ -27,11 +57,22 @@ class _StoryPageState extends State<StoryPage> {
 
   Future<List<Story>> _loadStories() async {
     String path = 'data/${widget.language.toLowerCase()}/${widget.level.toLowerCase()}/story_1.json';
-    String data = await rootBundle.loadString(path);
-    List<dynamic> jsonList = json.decode(data);
-    List<Story> stories = jsonList.map((json) => Story.fromJson(json)).toList();
+    String jsonString = await rootBundle.loadString(path);
+    final jsonData = json.decode(jsonString);
+    List<Story> stories = [];
+    for (var item in jsonData) {
+      Story story = Story(
+        item['title'],
+        item['author'],
+        item['imageUrl'],
+        item['text'],
+      );
+      stories.add(story);
+    }
     return stories;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,14 +118,23 @@ class _StoryPageState extends State<StoryPage> {
 
 class Story {
   final String title;
-  final String body;
+  final String text;
+  final List<String> choices;
 
-  Story({required this.title, required this.body});
+  Story({required this.title, required this.text, required this.choices});
 
   factory Story.fromJson(Map<String, dynamic> json) {
     return Story(
       title: json['title'],
-      body: json['body'],
+      text: json['text'],
+      choices: List<String>.from(json['choices']),
     );
   }
+}
+
+Future<Story> _loadStory(String path) async {
+  String data = await rootBundle.loadString(path);
+  Map<String, dynamic> jsonMap = json.decode(data);
+  Story story = Story.fromJson(jsonMap);
+  return story;
 }
