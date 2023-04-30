@@ -50,7 +50,7 @@ class _StoryPageState extends State<StoryPage> {
   Future<List<Story>> _storiesFuture = Future<List<Story>>.value([]);
 
   Future<List<Story>> _loadStories() async {
-    String storyJson = await DefaultAssetBundle.of(context).loadString("assets/story_1.json");
+    String storyJson = await DefaultAssetBundle.of(context).loadString("data/english/beginner/story_1.json");
     List<dynamic> jsonList = json.decode(storyJson);
     return jsonList.map((json) => Story.fromJson(json)).toList();
   }
@@ -62,7 +62,7 @@ class _StoryPageState extends State<StoryPage> {
   }
 
   Future<Story> loadStoryData() async {
-    String data = await rootBundle.loadString('assets/story_1.json');
+    String data = await rootBundle.loadString('data/english/beginner/story_1.json');
     Map<String, dynamic> jsonMap = json.decode(data);
     Story story = Story.fromJson(jsonMap);
     return story;
@@ -115,27 +115,28 @@ class _StoryPageState extends State<StoryPage> {
 
 class Story {
   final String title;
-  final String text;
-  final List<Choice> choices;
+  final String author;
+  final String body;
 
-  Story({required this.title, required this.text, required this.choices});
+  Story({required this.title, required this.author, required this.body});
 
   factory Story.fromJson(Map<String, dynamic> json) {
     return Story(
       title: json['title'],
-      text: json['text'],
-      choices: (json['choices'] as List<dynamic>)
-          .map((choice) => Choice.fromJson(choice))
-          .toList(),
+      author: json['author'],
+      body: json['body'],
     );
   }
 }
+
 
 class Choice {
   final String text;
   final String destination;
 
   Choice({required this.text, required this.destination});
+
+
 
   factory Choice.fromJson(Map<String, dynamic> json) {
     return Choice(
@@ -152,3 +153,4 @@ Future<Story> _loadStory(String path) async {
   Story story = Story.fromJson(jsonMap);
   return story;
 }
+
