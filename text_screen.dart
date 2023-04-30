@@ -55,22 +55,13 @@ class _StoryPageState extends State<StoryPage> {
     _storiesFuture = _loadStories();
   }
 
-  Future<List<Story>> _loadStories() async {
-    String path = 'data/${widget.language.toLowerCase()}/${widget.level.toLowerCase()}/story_1.json';
-    String jsonString = await rootBundle.loadString(path);
-    final jsonData = json.decode(jsonString);
-    List<Story> stories = [];
-    for (var item in jsonData) {
-      Story story = Story(
-        item['title'],
-        item['author'],
-        item['imageUrl'],
-        item['text'],
-      );
-      stories.add(story);
-    }
-    return stories;
+  Future<Story> loadStoryData() async {
+    String data = await rootBundle.loadString('assets/story_1.json');
+    Map<String, dynamic> jsonMap = json.decode(data);
+    Story story = Story.fromJson(jsonMap);
+    return story;
   }
+
 
 
 
