@@ -47,7 +47,13 @@ class StoryPage extends StatefulWidget {
 }
 
 class _StoryPageState extends State<StoryPage> {
-  late Future<List<Story>> _storiesFuture;
+  Future<List<Story>> _storiesFuture = Future<List<Story>>.value([]);
+
+  Future<List<Story>> _loadStories() async {
+    String storyJson = await DefaultAssetBundle.of(context).loadString("assets/story_1.json");
+    List<dynamic> jsonList = json.decode(storyJson);
+    return jsonList.map((json) => Story.fromJson(json)).toList();
+  }
 
   @override
   void initState() {
@@ -110,7 +116,7 @@ class _StoryPageState extends State<StoryPage> {
 class Story {
   final String title;
   final String text;
-  final List<String> choices;
+  final List<Choice> choices;
 
   Story({required this.title, required this.text, required this.choices});
 
@@ -118,10 +124,27 @@ class Story {
     return Story(
       title: json['title'],
       text: json['text'],
-      choices: List<String>.from(json['choices']),
+      choices: (json['choices'] as List<dynamic>)
+          .map((choice) => Choice.fromJson(choice))
+          .toList(),
     );
   }
 }
+
+class Choice {
+  final String text;
+  final String destination;
+
+  Choice({required this.text, required this.destination});
+
+  factory Choice.fromJson(Map<String, dynamic> json) {
+    return Choice(
+      text: json['text'],
+      destination: json['destination'],
+    );
+  }
+}
+
 
 Future<Story> _loadStory(String path) async {
   String data = await rootBundle.loadString(path);
