@@ -50,18 +50,18 @@ class StoryPage extends StatefulWidget {
 }
 
 class _StoryPageState extends State<StoryPage> {
-  Future<List<_StorySection>> _storySectionsFuture = Future<List<_StorySection>>.value([]);
-
-  Future<List<_StorySection>> _loadStorySections() async {
-    String storyJson = await rootBundle.loadString('data/english/beginner/story_1.json');
-    List<dynamic> jsonList = json.decode(storyJson)['pages'] ?? [];
-    return jsonList.map((json) => _StorySection.fromJson(json)).toList();
-  }
+  late Future<List<_StorySection>> _storySectionsFuture;
 
   @override
   void initState() {
     super.initState();
     _storySectionsFuture = _loadStorySections();
+  }
+
+  Future<List<_StorySection>> _loadStorySections() async {
+    String storyJson = await rootBundle.loadString('data/${widget.language.toLowerCase()}/${widget.level.toLowerCase()}/story_1.json');
+    List<dynamic> jsonList = json.decode(storyJson)['pages'];
+    return jsonList.map((json) => _StorySection.fromJson(json)).toList();
   }
 
   @override
@@ -105,6 +105,7 @@ class _StoryPageState extends State<StoryPage> {
     );
   }
 }
+
 
 class Story {
   final String title;
