@@ -26,8 +26,7 @@ class _StoryPageState extends State<StoryPage> {
   }
 
   Future<List<Story>> _loadStories() async {
-    String path = 'data/${widget.language}/${widget.level}/story_1.json';
-
+    String path = 'data/${widget.language.toLowerCase()}/${widget.level.toLowerCase()}/story_1.json';
     String data = await rootBundle.loadString(path);
     List<dynamic> jsonList = json.decode(data);
     List<Story> stories = jsonList.map((json) => Story.fromJson(json)).toList();
