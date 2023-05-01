@@ -59,10 +59,15 @@ class _StoryPageState extends State<StoryPage> {
   }
 
   Future<List<_StorySection>> _loadStorySections() async {
-    String storyJson = await rootBundle.loadString('data/${widget.language.toLowerCase()}/${widget.level.toLowerCase()}/story_1.json');
-    List<dynamic> jsonList = json.decode(storyJson)['pages'];
+
+    String storyJson = await rootBundle.loadString('data/english/beginner/story_1.json');
+    List<dynamic>? jsonList = json.decode(storyJson)['pages'];
+    if (jsonList == null) {
+      throw Exception('Failed to load story sections');
+    }
     return jsonList.map((json) => _StorySection.fromJson(json)).toList();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -106,23 +111,43 @@ class _StoryPageState extends State<StoryPage> {
   }
 }
 
-
 class Story {
-  final String title;
-  final String author;
-  final String body;
+  final List<Section> sections;
 
-  Story({required this.title, required this.author, required this.body});
+  Story(this.sections);
 
-  factory Story.fromJson(Map<String, dynamic> json) {
-    return Story(
-      title: json['title'],
-      author: json['author'],
-      body: json['body'],
-    );
+  factory Story.fromJson(String jsonStr) {
+    try {
+      final parsedJson = json.decode(jsonStr);
+      final sections = parsedJson['sections']
+          .map<Section>((json) => Section.fromJson(json))
+          .toList();
+      return Story(sections);
+    } catch (e) {
+      throw Exception('Failed to load story sections: $e');
+    }
+  }
+
+  static Future<Story> load(String language, String level) async {
+    final storyJson = await rootBundle
+        .loadString('data/$language/$level/story_1.json')
+        .catchError((error) {
+      throw Exception('Failed to load story sections: $error');
+    });
+
+    return Story.fromJson(storyJson);
   }
 }
 
+class Section {
+  final String text;
+
+  Section(this.text);
+
+  factory Section.fromJson(Map<String, dynamic> json) {
+    return Section(json['text']);
+  }
+}
 
 class Choice {
   final String text;
@@ -139,3 +164,4 @@ class Choice {
     );
   }
 }
+
